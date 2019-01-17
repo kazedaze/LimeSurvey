@@ -47,10 +47,12 @@ abstract class QuestionBaseRenderer extends StaticModel
         $this->sSGQA = $this->aFieldArray[1];
         $this->oQuestion = Question::model()->findByPk($aFieldArray[0]);
         $this->bRenderDirect = $bRenderDirect;
-        $this->sLanguage = $_SESSION['survey_'.$this->oQuestion->sid]['s_lang'];
+        $this->sLanguage = $this->setDefaultIfEmpty(@$aFieldArray['language'], @$_SESSION['survey_'.$this->oQuestion->sid]['s_lang']);
         $this->aQuestionAttributes = QuestionAttribute::model()->getQuestionAttributes($this->oQuestion->qid);
-        $this->aSurveySessionArray = $_SESSION['survey_'.$this->oQuestion->sid];
+        $this->aSurveySessionArray = @$_SESSION['survey_'.$this->oQuestion->sid];
         $this->mSessionValue = @$this->setDefaultIfEmpty($this->aSurveySessionArray[$this->sSGQA], '');
+        $oQuestionTemplate = QuestionTemplate::getNewInstance($this->oQuestion);
+        $oQuestionTemplate->registerAssets(); // Register the custom assets of the question template, if needed
     }
     
     protected function getTimeSettingRender()
@@ -206,7 +208,8 @@ abstract class QuestionBaseRenderer extends StaticModel
         return $output;
     }
 
-    protected function setSubquestions( $scale_id = null ){
+    protected function setSubquestions($scale_id = null)
+    {
         // Get questions and answers by defined order
         $sOrder = ($this->aQuestionAttributes['random_order'] == 1) ? dbRandom() : 'question_order';
         $oCriteria = new CDbCriteria();
@@ -217,15 +220,18 @@ abstract class QuestionBaseRenderer extends StaticModel
         //reset subquestions set prior to this call
         $this->aSubQuestions = [];
         foreach ($this->oQuestion->subquestions as $oQuestion) {
-            if($scale_id !== null && $oQuestion->scale_id != $scale_id) { continue; }
+            if ($scale_id !== null && $oQuestion->scale_id != $scale_id) {
+                continue;
+            }
             $this->aSubQuestions[$oQuestion->scale_id][] = $oQuestion;
         }
     }
 
-    protected function setAnsweroptions( $scale_id = null, $alpha = false ){
+    protected function setAnsweroptions($scale_id = null, $alpha = false)
+    {
         // Get questions and answers by defined order
-        $sOrder = ($this->aQuestionAttributes['random_order'] == 1) 
-            ? dbRandom() 
+        $sOrder = ($this->aQuestionAttributes['random_order'] == 1)
+            ? dbRandom()
             : ($alpha ? 'answer' : 'question_order');
         $oCriteria = new CDbCriteria();
         $oCriteria->order = $sOrder;
@@ -236,30 +242,37 @@ abstract class QuestionBaseRenderer extends StaticModel
         //reset answers set prior to this call
         $this->aAnswerOptions = [];
         foreach ($this->oQuestion->answers as $oAnswer) {
-            if( $scale_id !== null && $oAnswer->scale_id != $scale_id) { continue; }
+            if ($scale_id !== null && $oAnswer->scale_id != $scale_id) {
+                continue;
+            }
             $this->aAnswerOptions[$oAnswer->scale_id][] = $oAnswer;
         }
     }
 
-    protected function getAnswerCount($iScaleId=0){
+    protected function getAnswerCount($iScaleId=0)
+    {
         return count($this->aAnswerOptions[$iScaleId]);
     }
 
-    protected function getQuestionCount($iScaleId=0){
+    protected function getQuestionCount($iScaleId=0)
+    {
         return count($this->aSubQuestions[$iScaleId]);
     }
 
-    protected function getFromSurveySession($sIndex){
+    protected function getFromSurveySession($sIndex)
+    {
         return $_SESSION['survey_'.$this->oQuestion->sid][$sIndex];
     }
 
-    protected function applyPackages(){
-        foreach($this->aPackages as $sPackage) {
+    protected function applyPackages()
+    {
+        foreach ($this->aPackages as $sPackage) {
             Yii::app()->getClientScript()->registerPackage($sPackage);
         }
     }
 
-    protected function addScript($name, $content, $position = LSYii_ClientScript::POS_BEGIN, $appendId = false){
+    protected function addScript($name, $content, $position = LSYii_ClientScript::POS_BEGIN, $appendId = false)
+    {
         $this->aScripts[] = [
             'name' => $name.($appendId ? '_'.$this->oQuestion->qid : ''),
             'content' => $content,
@@ -267,19 +280,22 @@ abstract class QuestionBaseRenderer extends StaticModel
         ];
     }
 
-    protected function applyScripts(){
-        foreach($this->aScripts as $aScript) {
+    protected function applyScripts()
+    {
+        foreach ($this->aScripts as $aScript) {
             Yii::app()->getClientScript()->registerScript($aScript['name'], $aScript['content'], $aScript['position']);
         }
     }
-    protected function applyScriptfiles(){
-        foreach($this->aScriptFiles as $aScriptFile) {
+    protected function applyScriptfiles()
+    {
+        foreach ($this->aScriptFiles as $aScriptFile) {
             Yii::app()->getClientScript()->registerScriptFile($aScriptFile['path'], $aScriptFile['position']);
         }
     }
 
-    protected function applyStyles(){
-        foreach($this->aStyles as $aStyle) {
+    protected function applyStyles()
+    {
+        foreach ($this->aStyles as $aStyle) {
             Yii::app()->getClientScript()->registerCss($aStyle['name'], $aStyle['content']);
         }
     }
@@ -289,7 +305,8 @@ abstract class QuestionBaseRenderer extends StaticModel
         return trim($value) == '' ? $default : $value;
     }
 
-    protected function registerAssets() {
+    protected function registerAssets()
+    {
         $this->applyPackages();
         $this->applyScripts();
         $this->applyScriptfiles();
@@ -323,16 +340,15 @@ abstract class QuestionBaseRenderer extends StaticModel
         }
     
         // Currently null/0/false=> hidden , 1 : disabled
-        $filterStyle = !empty($this->aQuestionAttributes['array_filter_style']); 
+        $filterStyle = !empty($this->aQuestionAttributes['array_filter_style']);
         return ($filterStyle) ?  "ls-irrelevant ls-disabled" : "ls-irrelevant ls-hidden";
-
     }
     /**
     * Find the label / input width
     * @param string|int $labelAttributeWidth label width from attribute
     * @param string|int $inputAttributeWidth input width from attribute
     * @return array labelWidth as integer,inputWidth as integer,defaultWidth as boolean
-    */              
+    */
     public function getLabelInputWidth()
     {
         $labelAttributeWidth = @trim($this->aQuestionAttributes['label_input_columns']);
@@ -344,10 +360,10 @@ abstract class QuestionBaseRenderer extends StaticModel
         }
 
         $attributeLabelWidth =  ($labelAttributeWidth === 'hidden')
-            ? 0 
+            ? 0
             : (
-                ($labelAttributeWidth < 1 || $labelAttributeWidth > 12) 
-                ? null 
+                ($labelAttributeWidth < 1 || $labelAttributeWidth > 12)
+                ? null
                 : intval($labelAttributeWidth)
             );
         
@@ -356,7 +372,6 @@ abstract class QuestionBaseRenderer extends StaticModel
             $sLabelWidth = 4;
             $defaultWidth = true;
         } else {
-
             if ($attributeInputContainerWidth !== null) {
                 $sInputContainerWidth = $attributeInputContainerWidth;
             } elseif ($attributeLabelWidth == 12) {
@@ -385,7 +400,7 @@ abstract class QuestionBaseRenderer extends StaticModel
     /**
     * Include Keypad headers
     */
-    function includeKeypad()
+    public function includeKeypad()
     {
         Yii::app()->getClientScript()->registerCssFile(Yii::app()->getConfig('third_party')."jquery-keypad/jquery.keypad.alt.css");
         
@@ -400,5 +415,4 @@ abstract class QuestionBaseRenderer extends StaticModel
     abstract public function getMainView();
     abstract public function getRows();
     abstract public function render();
-
 }

@@ -117,6 +117,10 @@ $surveyid = $contextarray[2];
      */
     function PrepareEditorScript($load = false, $controller = null)
     {
+                
+        App()->getClientScript()->registerPackage('ckeditor'); //
+        App()->getClientScript()->registerPackage('ckeditoradditions'); // CKEDITOR in a global sope
+        
         if ($controller == null) {
             $controller = Yii::app()->getController();
         }
