@@ -208,10 +208,18 @@ abstract class QuestionBaseRenderer extends StaticModel
         return $output;
     }
 
+    protected function getQuestionAttribute($key1, $key2=null) {
+        $result =  isset($this->aQuestionAttributes[$key1]) ? $this->aQuestionAttributes[$key1] : null;
+        if($key2 !== null && $result !== null) {
+            $result =  isset($result[$key2]) ? $result[$key2] : null;
+        }
+        return $result;
+    }
+
     protected function setSubquestions($scale_id = null)
     {
         // Get questions and answers by defined order
-        $sOrder = ($this->aQuestionAttributes['random_order'] == 1) ? dbRandom() : 'question_order';
+        $sOrder = ($this->getQuestionAttribute('random_order') == 1) ? dbRandom() : 'question_order';
         $oCriteria = new CDbCriteria();
         $oCriteria->order = $sOrder;
         $oCriteria->addCondition('parent_qid=:parent_qid');
@@ -230,7 +238,7 @@ abstract class QuestionBaseRenderer extends StaticModel
     protected function setAnsweroptions($scale_id = null, $alpha = false)
     {
         // Get questions and answers by defined order
-        $sOrder = ($this->aQuestionAttributes['random_order'] == 1)
+        $sOrder = ($this->getQuestionAttribute('random_order') == 1)
             ? dbRandom()
             : ($alpha ? 'answer' : 'question_order');
         $oCriteria = new CDbCriteria();
@@ -326,7 +334,7 @@ abstract class QuestionBaseRenderer extends StaticModel
             return "";
         }
 
-        $sExcludeAllOther = $this->setDefaultIfEmpty($this->aQuestionAttributes['exclude_all_others'], false);
+        $sExcludeAllOther = $this->setDefaultIfEmpty($this->getQuestionAttribute('exclude_all_others'), false);
         /* EM don't set difference between relevance in session, if exclude_all_others is set , just ls-disabled */
         if ($sExcludeAllOther !== false) {
             foreach (explode(';', $sExcludeAllOther) as $sExclude) {
@@ -340,7 +348,7 @@ abstract class QuestionBaseRenderer extends StaticModel
         }
     
         // Currently null/0/false=> hidden , 1 : disabled
-        $filterStyle = !empty($this->aQuestionAttributes['array_filter_style']);
+        $filterStyle = !empty($this->aQuestionAttribute('array_filter_style'));
         return ($filterStyle) ?  "ls-irrelevant ls-disabled" : "ls-irrelevant ls-hidden";
     }
     /**
@@ -351,8 +359,8 @@ abstract class QuestionBaseRenderer extends StaticModel
     */
     public function getLabelInputWidth()
     {
-        $labelAttributeWidth = @trim($this->aQuestionAttributes['label_input_columns']);
-        $inputAttributeWidth = @trim($this->aQuestionAttributes['text_input_columns']);
+        $labelAttributeWidth = trim($this->getQuestionAttribute('label_input_columns'));
+        $inputAttributeWidth = trim($this->getQuestionAttribute('text_input_columns'));
 
         $attributeInputContainerWidth = intval($inputAttributeWidth);
         if ($attributeInputContainerWidth < 1 || $attributeInputContainerWidth > 12) {

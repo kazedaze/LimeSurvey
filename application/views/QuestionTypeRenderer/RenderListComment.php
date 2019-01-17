@@ -26,7 +26,7 @@ class RenderListComment extends QuestionBaseRenderer
     public function __construct($aFieldArray, $bRenderDirect = false)
     {
         parent::__construct($aFieldArray, $bRenderDirect);
-        $this->setAnsweroptions(null, $this->aQuestionAttributes['alphasort']==1);
+        $this->setAnsweroptions(null, $this->getQuestionAttribute('alphasort')==1);
     }
 
     public function getMainView()
@@ -162,7 +162,7 @@ class RenderListComment extends QuestionBaseRenderer
    
     public function render($sCoreClasses = '')
     {
-        if ($this->aQuestionAttributes['use_dropdown'] != 1) {
+        if ($this->getQuestionAttribute('use_dropdown') != 1) {
             return $this->renderList($sCoreClasses);
         }
         return $this->renderDropdown($sCoreClasses);
