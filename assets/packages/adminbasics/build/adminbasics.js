@@ -27543,7 +27543,10 @@ const SaveController = () => {
 
         return form;
     },
-
+    displayLoadingState = (el) => {
+        const loadingSpinner = '<i class="fa fa-cog fa-spin"></i>';
+        $(el).prop('disabled', true).append(loadingSpinner);
+    },
     //###########PRIVATE
     checks = () => {
         return {
@@ -27559,6 +27562,7 @@ const SaveController = () => {
                     }
 
                     $form.find('[type="submit"]').first().trigger('click');
+                    displayLoadingState(this);
                 },
                 on: 'click'
             },
@@ -27571,6 +27575,7 @@ const SaveController = () => {
                         $form = $(formid);
                     //alert($form.find('[type="submit"]').attr('id'));
                     $form.find('[type="submit"]').trigger('click');
+                    displayLoadingState(this);
                     return false;
                 },
                 on: 'click'
@@ -27589,6 +27594,7 @@ const SaveController = () => {
                     }
 
                     $form.find('[type="submit"]').first().trigger('click');
+                    displayLoadingState(this);
 
                 },
                 on: 'click'
@@ -27603,6 +27609,7 @@ const SaveController = () => {
                     $form.append(closeAfterSaveInput);
                     formSubmitting = true;
                     $form.find('[type="submit"]').first().trigger('click');
+                    displayLoadingState(this);
                 },
                 on: 'click'
             },
@@ -27622,6 +27629,7 @@ const SaveController = () => {
 
 
                     $form.find('[type="submit"]').trigger('click');
+                    displayLoadingState(this);
                     return false;
                 },
                 on: 'click'
@@ -27639,6 +27647,7 @@ const SaveController = () => {
                     }
 
                     $form.find('[type="submit"]').first().trigger('click');
+                    displayLoadingState(this);
                 },
                 on: 'click'
             },
@@ -27662,7 +27671,7 @@ const SaveController = () => {
             __WEBPACK_IMPORTED_MODULE_1__components_lslog__["a" /* default */].log('saveBindings', checkItem, $(item));
 
             if ($(item).length > 0) {
-                $(document).on(checkItem.on, item, checkItem.run);
+                $(document).on(checkItem.on, item, __WEBPACK_IMPORTED_MODULE_0_lodash___default.a.debounce(checkItem.run, 300));
                 __WEBPACK_IMPORTED_MODULE_1__components_lslog__["a" /* default */].log($(item), 'on', checkItem.on, 'run', checkItem.run);
             }
         });
