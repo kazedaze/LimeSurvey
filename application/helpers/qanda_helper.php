@@ -3946,8 +3946,8 @@ function do_array_texts($ia)
     $labelcode    = [];
 
     foreach ($aSubquestions as $lrow) {
-        $labelans[] = $oSubquestion->questionL10ns[$sSurveyLanguage]->question;
-        $labelans[] = $oSubquestion->title;
+        $labelans[] = $lrow->questionL10ns[$sSurveyLanguage]->question;
+        $labelans[] = $lrow->title;
     }
 
     if ($numrows = count($labelans)) {
