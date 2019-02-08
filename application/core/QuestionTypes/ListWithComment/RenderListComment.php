@@ -28,7 +28,7 @@ class RenderListComment extends QuestionBaseRenderer
     public function __construct($aFieldArray, $bRenderDirect = false)
     {
         parent::__construct($aFieldArray, $bRenderDirect);
-        $this->setAnsweroptions(null, $this->getQuestionAttribute('alphasort')==1);
+        $this->setAnsweroptions();
     }
 
     public function getMainView()
